@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ndi-dark: #121214;
+  --color-ndi-card: #1e1e22;
+  --color-ndi-accent: #7c3aed;
+  --color-ndi-accent-hover: #6d28d9;
+  --color-ndi-success: #10b981;
+  --color-ndi-danger: #ef4444;
+  --color-ndi-border: #333338;
+}
+
+@layer utilities {
+  .preview-aspect {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #121214; }
+::-webkit-scrollbar-thumb { background: #333338; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #55555b; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #121214;
+}
+
+#titlebar { -webkit-app-region: drag; }
+#titlebar button { -webkit-app-region: no-drag; }
