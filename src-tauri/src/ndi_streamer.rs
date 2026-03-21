@@ -52,7 +52,7 @@ impl StreamManager {
         // in this bridge we can just emit an empty or stubbed stats payload loop.
         // Or we can let the tasks emit events directly.
         
-        for (i, source) in sources.into_iter().enumerate() {
+        for (_i, source) in sources.into_iter().enumerate() {
             if source.url.is_empty() {
                 continue;
             }
@@ -74,7 +74,6 @@ impl StreamManager {
 
                 let mut frame_count = 0;
                 let mut last_fps_check = std::time::Instant::now();
-                let mut current_fps = 0;
 
                 loop {
                     let start = std::time::Instant::now();
@@ -108,7 +107,7 @@ impl StreamManager {
                     }
 
                     if last_fps_check.elapsed().as_secs() >= 1 {
-                        current_fps = frame_count;
+                        let current_fps = frame_count;
                         frame_count = 0;
                         last_fps_check = std::time::Instant::now();
                         
