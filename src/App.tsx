@@ -21,7 +21,13 @@ function App() {
 
   useEffect(() => {
     const unlisten = listen("stats-update", (event: any) => {
-      setStats(event.payload);
+      setStats(prev => {
+        const payload = event.payload;
+        return {
+          ...payload,
+          sources: prev.sources.map((s, i) => payload.sources[i].active ? payload.sources[i] : s)
+        };
+      });
     });
     return () => {
       unlisten.then(f => f());

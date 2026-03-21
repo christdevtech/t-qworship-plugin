@@ -2,6 +2,9 @@ use std::sync::Arc;
 use tauri::{AppHandle, State};
 use tokio::sync::Mutex;
 use serde::{Deserialize, Serialize};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 
 mod ndi_streamer;
 use ndi_streamer::StreamManager;
@@ -55,6 +58,46 @@ pub fn run() {
         .manage(AppState {
             stream_manager: Arc::new(Mutex::new(StreamManager::new())),
         })
+        .setup(|_app| {
+            // Register Windows Firewall exceptions on startup so NDI can be
+            // discovered on the local network. These are no-ops if rules already exist.
+            #[cfg(target_os = "windows")]
+            {
+                let exe = std::env::current_exe().unwrap_or_default();
+                let exe_str = exe.to_string_lossy().to_string();
+
+                // Inbound rule
+                let _ = std::process::Command::new("netsh")
+                    .args([
+                        "advfirewall", "firewall", "add", "rule",
+                        "name=QWorship NDI Bridge (In)",
+                        "dir=in",
+                        "action=allow",
+                        &format!("program={}", exe_str),
+                        "enable=yes",
+                        "profile=any",
+                    ])
+                    .creation_flags(0x08000000) // CREATE_NO_WINDOW
+                    .output();
+
+                // Outbound rule
+                let _ = std::process::Command::new("netsh")
+                    .args([
+                        "advfirewall", "firewall", "add", "rule",
+                        "name=QWorship NDI Bridge (Out)",
+                        "dir=out",
+                        "action=allow",
+                        &format!("program={}", exe_str),
+                        "enable=yes",
+                        "profile=any",
+                    ])
+                    .creation_flags(0x08000000) // CREATE_NO_WINDOW
+                    .output();
+
+                eprintln!("[Firewall] Attempted to register NDI firewall rules for: {}", exe_str);
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             start_stream,
             stop_stream,
@@ -63,3 +106,4 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
